@@ -2,7 +2,7 @@ const util = require('utils/util.js')
 var data = {
   //adminsid:"1490463872",
   //appid: "wx978aabc5088a48c3",
-  MchId: "1527313401",
+  MchId: "1487569982",
   //机构吧   1490463872
   //常春藤   1511482791
   //课程吧   1487569982	
@@ -16,7 +16,7 @@ var data = {
   //Secret: "b068590dc836feca0973125466df1668",
   // APIKey: "yizhaokejiarw234WER123123456eehu",
   // TheLablePath: "D:\wwwroot\kcbweb\cert\apiclient_cert.p12",
-  TitleName: "上海嘉定德馨业余进修学校"
+  TitleName: "课程吧"
   //昂立STEM
   //昂立少儿教育
   //飞向常春藤报名
@@ -117,6 +117,8 @@ var config = {
   GetGropuBookingListOfCid: `https://${host}/GroupBooking/GetGropuBookingListOfCid`,
   //根据团购Id获取团购信息
   GetGropuBookingOfId: `https://${host}/GroupBooking/GetGropuBookingOfId`,
+  //是否可以拼团
+  GetGroupStatus: `https://${host}//pay/GetGroupStatus`,
   //根据openId获取团购信息
   GetGropuBookingOfOpenId: `https://${host}/GroupBooking/GetGropuBookingOfOpenId`,
   //拼团成功后跳转等待页面获取信息

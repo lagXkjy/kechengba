@@ -29,178 +29,198 @@ Page({
     schoolIndex: 0
   },
 
-  formSubmit: function (e) {
+  formSubmit: function(e) {
     //debugger;
     console.log(e)
     wx.setStorageSync("formId", e.detail.formId);
     var that = this;
-      if (zhidian == "false") {
-        return;
-      }
-      if (e.detail.value.Name == "") {
-        common.modalTap("请填写姓名");
-        return
-      }
-      if (!(/^1[34578]\d{9}$/.test(e.detail.value.Phone))) {
-        common.modalTap("请填写正确的手机号");
-        return
-      }
-      if (e.detail.value.Remark.length > 30) {
-        common.modalTap("请输入少于30字的备注");
-        return
-      } else {
-        zhidian = "false";
-        var openid = wx.getStorageSync('openid');
-        var name = e.detail.value.Name;
-        var phone = e.detail.value.Phone;
-        var age = e.detail.value.Age;
-        var remark = e.detail.value.Remark;
-        var guid = "";
-        var packageid = "";
-        let cpId = this.data.schoolList[this.data.schoolIndex].CpId;
-        wx.login({
-          success: function (res) {
-            if (res.code) {
-              if (that.data.gid != "0") {
-                //参团订单,砍价付款
-                wx.request({
-                  url: common.config.pinpay,
-                  data: {
-                    openid: openid,
-                    gid: that.data.gid,
-                    grouptype: that.data.types,
-                    name: name,
-                    phone: phone,
-                    price: that.data.gprice,
-                    province: wx.getStorageSync('province'),
-                    city: wx.getStorageSync('city'),
-                    address: wx.getStorageSync('address'),
-                    age: age,
-                    remark: remark,
-                    cpId
-                  },
-                  method: 'GET',
-                  success: function (res) {
-                    packageid = res.data.package;
-  
-                    wx.requestPayment({
-                      timeStamp: res.data.timeStamp,
-                      nonceStr: res.data.nonceStr,
-                      package: res.data.package,
-                      signType: 'MD5',
-                      paySign: res.data.paySign,
-                      success: function (res) {
-                        // 支付成功
-                        if (that.data.co == "1" || that.data.coursetype == "4") {
-                          if (that.data.co == "1") {
-                            wx.request({
-                              url: common.config.TsGroupBooking,
-                              data: {
-                                gid: that.data.gid
-                              },
-                              method: 'POST',
-                              header: {
-                                'content-type': 'application/json'
-                              },
-                              success: function (res) {
-                                console.log(res);
+    if (zhidian == "false") {
+      return;
+    }
+    if (e.detail.value.Name == "") {
+      common.modalTap("请填写姓名");
+      return
+    }
+    if (!(/^1[34578]\d{9}$/.test(e.detail.value.Phone))) {
+      common.modalTap("请填写正确的手机号");
+      return
+    }
+    if (e.detail.value.Remark.length > 30) {
+      common.modalTap("请输入少于30字的备注");
+      return
+    } else {
+      zhidian = "false";
+      var openid = wx.getStorageSync('openid');
+      var name = e.detail.value.Name;
+      var phone = e.detail.value.Phone;
+      var age = e.detail.value.Age;
+      var remark = e.detail.value.Remark;
+      var guid = "";
+      var packageid = "";
+      let cpId = this.data.schoolList[this.data.schoolIndex].CpId;
+      wx.login({
+        success: function(res) {
+          if (res.code) {
+            if (that.data.gid != "0") {
+              //参团订单,砍价付款
+              wx.request({//是否拼团结束
+                url: common.config.GetGroupStatus,
+                data: {
+                  gid: that.data.gid
+                },
+                method: 'POST',
+                header: {
+                  'content-type': 'application/json'
+                },
+                success: function(res) {
+                  if (res.data.result) {
+                    if (res.data.Status == 0) {
+                      wx.request({
+                        url: common.config.pinpay,
+                        data: {
+                          openid: openid,
+                          gid: that.data.gid,
+                          grouptype: that.data.types,
+                          name: name,
+                          phone: phone,
+                          price: that.data.gprice,
+                          province: wx.getStorageSync('province'),
+                          city: wx.getStorageSync('city'),
+                          address: wx.getStorageSync('address'),
+                          age: age,
+                          remark: remark,
+                          cpId
+                        },
+                        method: 'GET',
+                        success: function(res) {
+                          packageid = res.data.package;
+                          wx.requestPayment({
+                            timeStamp: res.data.timeStamp,
+                            nonceStr: res.data.nonceStr,
+                            package: res.data.package,
+                            signType: 'MD5',
+                            paySign: res.data.paySign,
+                            success: function(res) {
+                              // 支付成功
+                              if (that.data.co == "1" || that.data.coursetype == "4") {
+                                if (that.data.co == "1") {
+                                  wx.request({
+                                    url: common.config.TsGroupBooking,
+                                    data: {
+                                      gid: that.data.gid
+                                    },
+                                    method: 'POST',
+                                    header: {
+                                      'content-type': 'application/json'
+                                    },
+                                    success: function(res) {
+                                      console.log(res);
+                                    }
+                                  });
+                                }
+                                wx.redirectTo({
+                                  url: "../success/success?gid=" + that.data.gid
+                                });
+
+                              } else {
+                                wx.navigateTo({
+                                  url: "../OnGroup/OnGroup?gid=" + that.data.gid + "&kid=0"
+                                })
                               }
-                            });
-                          }
-                          wx.redirectTo({
-                            url: "../success/success?gid=" + that.data.gid
-                          });
-  
-                        } else {
-                          wx.navigateTo({
-                            url: "../OnGroup/OnGroup?gid=" + that.data.gid + "&kid=0"
+                            },
+                            fail: function(res) {
+                              that.DeleteGroupOrder(openid);
+                              // 失败或取消
+                              console.log(res);
+                            },
+                            complete: function(res) {
+                              // 成功或取消都会进入该方法
+
+                            }
                           })
                         }
-                      },
-                      fail: function (res) {
-                        that.DeleteGroupOrder(openid);
-                        // 失败或取消
-                        console.log(res);
-                      },
-                      complete: function (res) {
-                        // 成功或取消都会进入该方法
-  
-                      }
-                    })
+                      });
+                    } else {
+                      common.modalTap("拼团已结束");
+                    }
+
                   }
-                });
-              }
-              else {
-                //开团订单
-                wx.request({
-                  url: common.config.pay,
-                  data: {
-                    openid: openid,
-                    cid: that.data.kid,
-                    grouptype: that.data.types,
-                    name: name,
-                    phone: phone,
-                    price: that.data.gprice,
-                    province: wx.getStorageSync('province'),
-                    city: wx.getStorageSync('city'),
-                    address: wx.getStorageSync('address'),
-                    age: age,
-                    remark: remark,
-                    cpId
-                  },
-                  method: 'GET',
-                  success: function (res) {
-                    wx.setStorageSync("packageid", res.data.package);
-                    packageid = res.data.package;
-                    wx.requestPayment({
-                      timeStamp: res.data.timeStamp,
-                      nonceStr: res.data.nonceStr,
-                      package: res.data.package,
-                      signType: 'MD5',
-                      paySign: res.data.paySign,
-                      success: function (res) {
-                        // 支付成功
-                        if (that.data.types == "0") {
-                          wx.redirectTo({
-                            url: "../success/success?gid=0&ctype=" + that.data.coursetype
-                          })
-                        }
-                        else {
-                          wx.navigateTo({
-                            url: "../OnGroup/OnGroup?gid=0&kid=" + that.data.kid
-                          })
-                        }
-                      },
-                      fail: function (res) {
-                        that.DeleteGroupOrder(openid);
-                        // 失败或取消
-                      },
-                      complete: function (res) {
-                        // 成功或取消都会进入该方法
-  
-                      }
-                    })
-                  }
-                });
-              }
+                }
+              });
             } else {
-              console.log('获取用户登录态失败！' + res.errMsg)
+              //开团订单
+              wx.request({
+                url: common.config.pay,
+                data: {
+                  openid: openid,
+                  cid: that.data.kid,
+                  grouptype: that.data.types,
+                  name: name,
+                  phone: phone,
+                  price: that.data.gprice,
+                  province: wx.getStorageSync('province'),
+                  city: wx.getStorageSync('city'),
+                  address: wx.getStorageSync('address'),
+                  age: age,
+                  remark: remark,
+                  cpId
+                },
+                method: 'GET',
+                success: function(res) {
+                  wx.setStorageSync("packageid", res.data.package);
+                  packageid = res.data.package;
+                  wx.requestPayment({
+                    timeStamp: res.data.timeStamp,
+                    nonceStr: res.data.nonceStr,
+                    package: res.data.package,
+                    signType: 'MD5',
+                    paySign: res.data.paySign,
+                    success: function(res) {
+                      // 支付成功
+                      if (that.data.types == "0") {
+                        wx.redirectTo({
+                          url: "../success/success?gid=0&ctype=" + that.data.coursetype
+                        })
+                      } else {
+                        wx.navigateTo({
+                          url: "../OnGroup/OnGroup?gid=0&kid=" + that.data.kid
+                        })
+                      }
+                    },
+                    fail: function(res) {
+                      that.DeleteGroupOrder(openid);
+                      // 失败或取消
+                    },
+                    complete: function(res) {
+                      // 成功或取消都会进入该方法
+
+                    }
+                  })
+                }
+              });
             }
+          } else {
+            console.log('获取用户登录态失败！' + res.errMsg)
           }
-        });
-      }
+        }
+      });
+    }
   },
   DeleteGroupOrder(openid) {
     zhidian = "true";
     var that = this;
     wx.request({
       url: common.config.DeleteGroupOfgidOrcidAndopenid,
-      data: { cid: that.data.kid, gid: that.data.gid, openid: openid },
+      data: {
+        cid: that.data.kid,
+        gid: that.data.gid,
+        openid: openid
+      },
       method: 'POST',
       header: {
         'content-type': 'application/json'
       },
-      success: function (res) {
+      success: function(res) {
         if (res.data.result) {
           // common.modalTap('您的订单已取消');
           // wx.navigateBack({
@@ -213,7 +233,7 @@ Page({
   /**
    * 生命周期函数--监听页面加载
    */
-  onLoad: function (options) {
+  onLoad: function(options) {
     var that = this;
     var gid = "0";
     var openid = wx.getStorageSync('openid');
@@ -235,7 +255,7 @@ Page({
       header: {
         'content-type': 'application/json'
       },
-      success: function (res) {
+      success: function(res) {
         if (res.data.result) {
           var model = res.data.modle;
           var gp = model.GroupPrice;
@@ -254,7 +274,7 @@ Page({
           sp = sp.toFixed(2);
           var ggp = model.GroupPrice;
           var rrp = model.RetailPrice;
-          if (types == "0")//单独购买
+          if (types == "0") //单独购买
           {
             ggp = model.RetailPrice;
             rrp = model.GroupPrice;
@@ -276,12 +296,14 @@ Page({
           var phone = null;
           wx.request({
             url: common.config.GetNameAndPhoneOfOpenId,
-            data: { openid: openid },
+            data: {
+              openid: openid
+            },
             method: 'POST',
             header: {
               'content-type': 'application/json'
             },
-            success: function (res) {
+            success: function(res) {
               if (res.data.result) {
                 name = res.data.name;
                 phone = res.data.phone;
@@ -318,32 +340,35 @@ Page({
     });
   },
   pickerChange(e) { //picker选择器切换
-    this.setData({ schoolIndex: +e.detail.value });
+    this.setData({
+      schoolIndex: +e.detail.value
+    });
   },
   getSchoolData() { //获取校区信息
     common.request(
       'POST',
-      common.config.GetSchoolInfo,
-      { corId: this.data.corId },
+      common.config.GetSchoolInfo, {
+        corId: this.data.corId
+      },
       (res) => {
-        if(res.data.res){
+        if (res.data.res) {
           this.setData({
             schoolList: res.data.data
           })
         }
       },
-      (res) => { },
-      (res) => { }
+      (res) => {},
+      (res) => {}
     );
   },
-  onReady: function () {
+  onReady: function() {
     this.getSchoolData();
   },
 
   /**
    * 生命周期函数--监听页面显示
    */
-  onShow: function () {
+  onShow: function() {
     zhidian = "true";
     let avatarUrl = wx.getStorageSync('avatarUrl')
     if (avatarUrl) {
@@ -356,34 +381,34 @@ Page({
   /**
    * 生命周期函数--监听页面隐藏
    */
-  onHide: function () {
+  onHide: function() {
 
   },
 
   /**
    * 生命周期函数--监听页面卸载
    */
-  onUnload: function () {
+  onUnload: function() {
 
   },
 
   /**
    * 页面上拉触底事件的处理函数
    */
-  onReachBottom: function () {
+  onReachBottom: function() {
 
   },
 
   /**
    * 用户点击右上角分享
    */
-  onShareAppMessage: function () {
+  onShareAppMessage: function() {
 
   },
-  onPullDownRefresh: function () {
+  onPullDownRefresh: function() {
     wx.stopPullDownRefresh()
   },
-  kecheng: function (e) {
+  kecheng: function(e) {
     var id = this.data.kid;
     var ctype = this.data.coursetype;
     if (ctype == "1") //拼团课程
@@ -391,19 +416,16 @@ Page({
       wx.navigateTo({
         url: '../Detail/Detail?yu=0&id=' + id,
       });
-    }
-    else if (ctype == "4")//砍价课程
+    } else if (ctype == "4") //砍价课程
     {
       wx.navigateTo({
         url: '../Onebargaining/Onebargaining?cid=' + id + "&yu=0"
       });
-    }
-    else if (ctype == "5") {//一元课程
+    } else if (ctype == "5") { //一元课程
       wx.navigateTo({
         url: '../YiYuan/YiYuan?id=' + id + "&yu=0&oid=0"
       });
-    }
-    else if (ctype == "6") {//答题课程
+    } else if (ctype == "6") { //答题课程
 
     }
   },
@@ -417,14 +439,12 @@ Page({
       wx.setStorageSync('avatarUrl', userInfo.avatarUrl)
       util.request(
         common.config.PutAvaUrlNick,
-        "POST",
-        {
+        "POST", {
           openId: wx.getStorageSync('openid'),
           nickName: userInfo.nickName,
           avaurl: userInfo.avatarUrl
         },
-        (res) => {
-        },
+        (res) => {},
         (err) => {
 
         },

@@ -94,7 +94,7 @@
   "window": {
     "navigationBarBackgroundColor": "#393a3d",
     "navigationBarTextStyle": "white",
-    "navigationBarTitleText": "上海嘉定德馨业余进修学校",
+    "navigationBarTitleText": "课程吧",
     "backgroundColor": "#ffffff",
     "backgroundTextStyle": "dark",
     "enablePullDownRefresh": true
@@ -103,9 +103,10 @@
     "get-user-info": "/components/getUserInfo/getUserInfo"
   },
   "permission": {
-		"scope.userLocation": {
-			"desc": "小程序获取您的位置，用于更好的为您提供服务"
-		}
-	},
-  "debug": false
+    "scope.userLocation": {
+      "desc": "小程序获取您的位置，用于更好的为您提供服务"
+    }
+  },
+  "debug": false,
+  "sitemapLocation": "sitemap.json"
 }

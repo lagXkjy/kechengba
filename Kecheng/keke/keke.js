@@ -421,6 +421,7 @@ Page({
       }
       var sheng = e.currentTarget.dataset.sheng;
       if (sheng != "0") {
+        console.log(oid)
         wx.navigateTo({
           url: '../ShiTing/ShiTing?id=' + Id + "&yu=0&copenid=0&oid=" + oid
         });
